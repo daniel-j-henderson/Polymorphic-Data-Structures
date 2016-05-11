@@ -1,21 +1,18 @@
 module node_mod
     use key_mod
-    use intkey_mod
-    use stringkey_mod
 implicit none
     type node
         class(key), pointer :: mykey => null()
-        class(node), private, pointer :: next => null()
-        class(node), private, pointer :: prev => null()
+        class(node), pointer :: next => null()
+        class(node), pointer :: prev => null()
         contains
         procedure :: getNext
         procedure :: getPrev
-        procedure :: setValue
-        procedure :: getValue
+        procedure :: setKey
+        procedure :: getkey
         procedure :: setNext
         procedure :: setPrev
         procedure :: delete
-        procedure :: printNode
     end type node
 
     interface node
@@ -31,20 +28,6 @@ implicit none
         this%prev => null()
     end subroutine delete
 
-    subroutine printNode(this)
-        class(node) :: this
-        class(key), pointer :: temp
-        temp => this%mykey
-        select type(temp)
-        type is (int_key)
-            print *, temp%value
-        type is (string_key)
-            print *, temp%getValue()
-        class default
-           print *, temp%getID()
-        end select
-    end subroutine printNode
-    
     function getNext(this)
         class(node) :: this
         class(node), pointer :: getNext
@@ -57,20 +40,20 @@ implicit none
         getPrev => this%prev
     end function getPrev    
 
-    subroutine setValue(this, val)
+    subroutine setKey(this, val)
         class(node) :: this
         class(key) :: val
         if (associated(this%mykey)) then
             deallocate(this%mykey)
         end if
         allocate(this%mykey, source=val)
-    end subroutine setValue
+    end subroutine setKey
 
-    function getValue(this)
+    function getKey(this)
         class(node) :: this
-        class(key), pointer :: getValue
-        allocate(getValue, source=this%mykey)
-    end function getValue
+        class(key), pointer :: getKey
+        allocate(getKey, source=this%mykey)
+    end function getKey
 
     subroutine setNext(this, n)
         class(node), pointer :: n

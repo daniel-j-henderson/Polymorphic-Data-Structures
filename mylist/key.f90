@@ -1,28 +1,23 @@
 module key_mod
-  type :: key
+  type, abstract :: key
     integer :: id
     contains
       procedure :: setID
       procedure :: getID
-!     procedure :: getValue
+      procedure(eq), deferred :: equals
+      generic :: operator(==) => equals
   end type key
 
-  interface key
-    module procedure keyconstructor
+  abstract interface
+      function eq(this, other)
+        import
+        class(key), intent(in) :: this
+        class(key), intent(in) :: other
+        logical :: eq
+      end function eq
   end interface
+
   contains
-!    function getValue(this)
-!        class(key) :: this
-!        integer :: getValue
-!        getValue = this%id
-!    end function getValue
-    
-    function keyconstructor(i)
-        integer :: i
-        class(key), pointer :: keyconstructor
-        allocate(keyconstructor)
-        keyconstructor%id = i
-    end function keyconstructor
 
     subroutine setID(this, i)
         class(key) :: this
@@ -37,74 +32,6 @@ module key_mod
 
 end module key_mod
 
-!module anykey_mod
-!    use key_mod
-!    type, extends (key) :: any_key
-!    class(*), pointer :: value
-!    contains 
-!        procedure :: getValue => getAnyKeyVal
-!        procedure :: setValue => setAnyKeyVal
-!        procedure :: setAnyKeyEqual
-!        procedure :: anyKeyEquals
-!        generic :: assignment(=) => setAnyKeyEqual
-!        generic :: operator(==) => anyKeyEquals
-!    end type any_key
-!
-!    interface any_key
-!        module procedure anyconstructor
-!    end interface
-!   
-!    contains
-!        
-!        function anyconstructor(i, val)
-!            class(*) :: val
-!            integer :: i
-!            class(any_key), pointer :: anyconstructor
-!            allocate(anyconstructor)
-!            allocate(anyconstructor%value, source=val)
-!            anyconstructor%id = i
-!        end function anyconstructor
-!
-!        function getAnyKeyVal(this)
-!            class(*), pointer :: getAnyKeyVal
-!            class(any_key) :: this
-!            getAnyKeyVal => this%value
-!        end function getAnyKeyVal
-!
-!        subroutine setAnyKeyVal(this, val)
-!            class(any_key) :: this
-!            class(*) :: val
-!            if (associated(this%value)) then
-!                deallocate(this%value)
-!            end if
-!            allocate(this%value, source=val)
-!        end subroutine setAnyKeyVal
-!
-!        subroutine setAnyKeyEqual(this, other)
-!            class(any_key), intent(out) :: this
-!            class(key), intent(in) :: other
-!            if (associated(this%value)) then
-!                deallocate(this%value)          
-!            end if
-!            allocate(this%value, source = other%getValue())
-!        end subroutine setAnyKeyEqual
-!
-!        function anyKeyEquals(this, other)
-!            class(any_key), intent(in) :: this
-!            class(key), intent(in) :: other
-!            logical :: anyKeyEquals
-!            class(*), allocatable :: temp
-!            allocate(temp, source = other%getValue())
-!            if(same_type_as(this%value, temp)) then
-!            if (this%value == temp) then
-!                anyKeyEquals = .true.
-!            else
-!                anyKeyEquals = .false.
-!            end if
-!            end if
-!        end function anyKeyEquals
-!                    
-!end module anykey_mod 
 
 module stringkey_mod
   use key_mod
@@ -114,9 +41,8 @@ module stringkey_mod
       procedure :: setValue => setStrKeyVal
       procedure :: getValue => getStrKeyVal
       procedure :: setStrKeyEqual
-      procedure :: strKeyEquals
+      procedure :: equals => strKeyEquals
       generic :: assignment(=) => setStrKeyEqual
-      generic :: operator(==) => strKeyEquals
   end type string_key
 
   interface string_key
@@ -155,13 +81,18 @@ module stringkey_mod
 
     function strKeyEquals(this, other)
       class(string_key), intent(in) :: this
-      class(string_key), intent(in) :: other
+      class(key), intent(in) :: other
       logical :: strKeyEquals
+      select type(other)
+      type is (string_key)
       if (this%value == other%value) then
         strKeyEquals = .true.
       else 
         strKeyEquals = .false.
       endif
+      class default
+        strKeyEquals = .false.
+      end select
     end function strKeyEquals
 
 end module stringkey_mod
@@ -174,9 +105,8 @@ module intkey_mod
       procedure :: setValue => setIntKeyVal
       procedure :: getValue => getIntKeyVal
       procedure :: setIntKeyEqual
-      procedure :: intKeyEquals
+      procedure :: equals => intKeyEquals
       generic :: assignment(=) => setIntKeyEqual
-      generic :: operator(==) => intKeyEquals
   end type int_key
 
   interface int_key
@@ -215,13 +145,18 @@ module intkey_mod
 
     function intKeyEquals(this, other)
       class(int_key), intent(in) :: this
-      class(int_key), intent(in) :: other
+      class(key), intent(in) :: other
       logical :: intKeyEquals
+      select type (other)
+      type is (int_key)
       if (this%value == other%value) then
         intKeyEquals = .true.
       else 
         intKeyEquals = .false.
       endif
+      class default
+      intKeyEquals = .false.
+      end select
     end function intKeyEquals
 
 end module intkey_mod
