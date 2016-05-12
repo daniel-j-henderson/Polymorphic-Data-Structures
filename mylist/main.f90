@@ -76,9 +76,9 @@ program main
 
 !Time longest contains
     call system_clock(cnt)
-    tptr => int_key(0, exps(i))
-    keyptr => int_key(0, exps(i+1))
-    write (*,*) "Contains n, n+1: ", mylist%contain(tptr), mylist%contain(keyptr) ! F, T
+    tptr => int_key(0, exps(i)*2)
+    keyptr => int_key(0, exps(i)*2+1)
+    write (*,*) "Contains n, n+1: ", mylist%contain(tptr), mylist%contain(keyptr) ! T, F
     deallocate(tptr, keyptr)
     call system_clock(tmp)
     results((i-1)*4+3) = (tmp - cnt) / float(cntrate)
